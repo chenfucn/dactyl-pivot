@@ -872,6 +872,27 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;
+;; Tent pole
+;;;;;;;;;;;;;;;;;;
+
+;; you need four, two for each hand
+(def tent-pole 
+    (difference
+        (hull
+            (->>(cylinder out-radius  3)
+                (translate [-30 0 0])
+            )
+            (->>(cylinder out-radius  3)
+                (translate [30 0 0])
+            )
+        )
+        (->>(cylinder inner-radius  5)
+            (translate [30 0 0])
+        )
+
+    )
+)
 
 ;;;;;;;;;;;;;;;;;;
 ;; Final Export ;;
@@ -925,3 +946,4 @@
 (spit "things/thumb-plate-rack-left.scad"
       (write-scad (mirror [-1 0 0] thumb-plate-rack)))
 
+(spit "things/tent-pole.scad" (write-scad tent-pole))
