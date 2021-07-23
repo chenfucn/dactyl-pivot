@@ -36,14 +36,14 @@
     (cond (<= column 1) [0 -2 0]
           (= column 3) [0 2.82 -4.5]
           (= column 5) [0 -12 5.64]    ; original [0 -5.8 5.64]
-          (> column 5) [0 -12 7.3]
+          (> column 5) [0 -12 7.8]
           :else [0 0 0])
     (cond (= column 2) [0 2.82 -4.5]
           (= column 4) [0 -12 5.64]    ; original [0 -5.8 5.64]
-          (> column 4) [0 -12 7.3]
+          (> column 4) [0 -12 7.8]
           :else [0 0 0])))
 
-(def thumb-offsets [-8 18 21])
+(def thumb-offsets [-8 17 21])
 ;(def thumb-offsets [-6 18 25])
 
 (def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
@@ -184,7 +184,7 @@
            (= col lastcol)
            (<= row last-15u-row)
            (>= row first-15u-row))
-    3.7625
+    3.8625
     0))
 
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
@@ -588,7 +588,7 @@
             (plate-wall direction)
             (ext-out direction 0 (cylinder out-radius plate-thickness))
         )
-        (ext-out direction 0 (cylinder inner-radius (+ plate-thickness 2))) ;m3 screw hole
+        (ext-out direction 0 (with-fn 30 (cylinder inner-radius (+ plate-thickness 2)))) ;m3 screw hole
     )
 )
 
@@ -613,52 +613,50 @@
 ;;;;;;;;;;;;;;;;;
 ;; Lower Rack
 ;;;;;;;;;;;;;;;;;
+(defn m3hex [clearance]
+    (let [
+          height    (+ 2.32 clearance)
+          diameter  (+ 5.31 clearance)
+          angle     (/ π 3)
+          edge      (/ diameter (Math/tan angle))
+      ]
+      (union
+          (cube diameter edge height)
+          (rotate (/ π 3) [0 0 1] (cube diameter edge height))
+          (rotate (/ π -3) [0 0 1] (cube diameter edge height))
+
+      )
+        ;  (->> (cylinder (/ diameter 2) height)
+              ;
+        ;      (translate [0 0 (/ height -2)] )
+        ;      (with-fn 6)
+        ;  )
+    )
+)
+
 
 (defn connect-hulls [& shapes]
   (apply union
          (map (partial apply hull)
               (partition 2 1 shapes))))
 
-(defn support-edge [direction z-off]
-    (let [
-          block (cube (* 2 out-radius) wall-thickness   plate-thickness)
-          distance (+ (/ mount-height 2) (* out-radius 2)  wall-thickness)
-      ](translate [0 0  (+ z-off (/ plate-thickness 2))]
-        (case direction
-        :up (horizontal-mov distance :up block)
-        :down (horizontal-mov distance :down block)
-        :left (horizontal-mov distance :left (rotate (/ π 2) [0 0 1] block))
-        :right (horizontal-mov distance :right (rotate (/ π 2) [0 0 1] block))
-        )
-      )
-    )
-)
 
 (defn support-m [direction z-off]
-        (union
-            (hull
-                (support-edge direction z-off)
-                (ext-out direction z-off (cylinder out-radius plate-thickness))
-            )
-            ;(cylinder inner-radius (+ plate-thickness 2))
-            (support-edge direction (- z-off plate-thickness))
-
-        )
+    (ext-out direction z-off (cylinder out-radius plate-thickness))
 )
 
 (defn support-face [direction z-off]
-    (let [
-          block (cube (* 2 out-radius) wall-thickness   3)
-          distance (+ (/ mount-height 2) (* out-radius 2)  wall-thickness)
-      ](translate [0 0  (- z-off plate-thickness )]
-        (case direction
-        :up (horizontal-mov distance :up block)
-        :down (horizontal-mov distance :down block)
-        :left (horizontal-mov distance :left (rotate (/ π 2) [0 0 1] block))
-        :right (horizontal-mov distance :right (rotate (/ π 2) [0 0 1] block))
-        )
-      )
+    (ext-out direction (- z-off 1) (cylinder out-radius 3))
+)
+
+(defn hex-slot [direction z-off]
+  (hull
+    (->> (m3hex 0.5)
+        (horizontal-mov (+ (/ mount-height 2) 20) direction)
+        (translate [0 0 (+ z-off (/ plate-thickness 2))])
     )
+    (ext-out direction z-off (m3hex 0.3))
+  )
 )
 
 (def vdisc
@@ -670,7 +668,8 @@
 (def floor-anchor-poslr
     (let [
         down-pos [0  (- 0 mount-height) 0]
-      ](map * (key-position lastcol cornerrow down-pos) [1 1 0])
+      ]
+      (map + [0 0 5] (map * (key-position lastcol cornerrow down-pos) [1 1 0]))
     )
 )
 
@@ -678,13 +677,14 @@
 (def floor-anchor-posur
     (let [
         up-pos [0 mount-height 0]
-      ](map * (key-position lastcol 0 up-pos) [1 1 0])
+      ]
+      (map + [0 0 5] (map * (key-position lastcol 0 up-pos) [1 1 0]))
     )
 )
 
 ; position of midway support
 (def midpoint-xz
-    (map * (key-position (+ innercol-offset 2) centerrow [mount-width 0 0]) [1 0 1])
+    (map * (key-position (+ innercol-offset 2) centerrow [0 0 0]) [1 0 1])
 )
 
 (def midpoint-lower
@@ -719,7 +719,7 @@
   (union
       ; lower right pole
       (hull
-            (->> vdisc
+            (->> (sphere out-radius)
                 (translate floor-anchor-poslr))
             (key-place lastcol cornerrow (support-face :down (- -1.5 plate-thickness)))
       )
@@ -727,7 +727,7 @@
 
       ; upper right pole
       (hull
-            (->> vdisc
+            (->> (sphere out-radius)
                 (translate floor-anchor-posur))
             (key-place lastcol 0 (support-face :up (- -1.5 plate-thickness)))
       )
@@ -735,10 +735,10 @@
 
     ; north edge supporting arms
     (connect-hulls
-      (->> vdisc
+      (->> (sphere out-radius)
           (translate floor-anchor-posur)
       )
-      (->> vdisc
+      (->> (sphere out-radius)
           (translate midpoint-upper)
       )
       (->> vdisc
@@ -750,10 +750,10 @@
 
     ; south edge supporting arms
     (connect-hulls
-      (->> vdisc
+      (->> (sphere out-radius)
           (translate floor-anchor-poslr)
       )
-      (->> vdisc
+      (->> (sphere out-radius)
           (translate midpoint-lower)
       )
       (->> vdisc
@@ -794,13 +794,30 @@
 
 (def finger-plate-arm-screw-holes
     (let [m3t (->>(cylinder inner-radius  20)
-                  (rotate (/ π 2) [1 0 0]))]
+                  (rotate (/ π 2) [1 0 0])
+                  (with-fn 30))]
         (union
           ; screw holes below mounting holes
-          (key-place lastcol cornerrow (ext-out :down (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          (key-place lastcol 0 (ext-out :up (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          (key-place 0 0 (ext-out :up (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          (key-place (+  innercol-offset 1) lastrow (ext-out :down (- -0.1 plate-thickness) (cylinder inner-radius 10)))
+          (key-place lastcol cornerrow (ext-out :down (- -0.1 plate-thickness)  (with-fn 30 (cylinder inner-radius 10))))
+          (key-place lastcol 0 (ext-out :up (- -0.1 plate-thickness) (with-fn 30 (cylinder inner-radius 10))))
+          (key-place 0 0 (ext-out :up (- -0.1 plate-thickness) (with-fn 30 (cylinder inner-radius 10))))
+          (key-place (+  innercol-offset 1) lastrow (ext-out :down (- -0.1 plate-thickness) (with-fn 30 (cylinder inner-radius 10))))
+
+          ; m3 hex nuts
+          (key-place lastcol 0 (hex-slot :up (- -4 plate-thickness)))
+          (key-place lastcol cornerrow (hex-slot :down (- -4 plate-thickness)))
+          (key-place 0 0 (hex-slot :up (- -4 plate-thickness)))
+          (key-place (+  innercol-offset 1) lastrow (hex-slot :down (- -4 plate-thickness)))
+          (->> (m3hex 0.3)
+              (rotate (/ π 2) [1 0 0])
+              (translate leftpoint-upper )
+              (translate [0 wall-thickness 0])
+              )
+          (->> (m3hex 0.3)
+              (rotate (/ π -2) [1 0 0])
+              (translate leftpoint-lower )
+              (translate [0 (* wall-thickness -1.5) 0])
+              )
 
           ;holes for vertical beams between north and south beams
           (hull 
@@ -823,14 +840,12 @@
 
 (def thumb-plate-arm-screw-holes
     (let [m3t (->>(cylinder inner-radius  20)
-                  (rotate (/ π 2) [1 0 0]))]
+                  (rotate (/ π 2) [1 0 0])
+                  (with-fn 30))]
         (union
           ; screw holes below mounting holes
-          ;(thumb-place 2 1 (ext-out :up (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          ;(thumb-place 2 -1 (ext-out :down (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          ;(thumb-place 0 -0.9 (ext-out :down (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          (minithumb-mr-place (ext-out :down (- -0.1 plate-thickness) (cylinder inner-radius 10)))
-          (minithumb-bl-place (ext-out :up (- -0.1 plate-thickness) (cylinder inner-radius 10)))
+          (minithumb-mr-place (ext-out :down (- -0.1 plate-thickness) (with-fn 30 (cylinder inner-radius 10))))
+          (minithumb-bl-place (ext-out :up (- -0.1 plate-thickness) (with-fn 30 (cylinder inner-radius 10))))
 
           ;holes for  beams connecting to finger plate arms
            (->> m3t
@@ -877,23 +892,64 @@
 ;;;;;;;;;;;;;;;;;;
 
 ;; you need four, two for each hand
-(def tent-pole 
-    (difference
-        (hull
-            (->>(cylinder out-radius  3)
-                (translate [-30 0 0])
-            )
-            (->>(cylinder out-radius  3)
-                (translate [30 0 0])
-            )
-        )
-        (->>(cylinder inner-radius  5)
-            (translate [30 0 0])
-        )
+;; ((def tent-pole 
+;;     (difference
+;;         (hull
+;;             (->>(cylinder out-radius  3)
+;;                 (translate [-30 0 0])
+;;             )
+;;             (->>(cylinder out-radius  3)
+;;                 (translate [30 0 0])
+;;             )
+;;         )
+;;         (->>(cylinder inner-radius  5)
+;;             (translate [30 0 0])
+;;         )
 
-    )
+;;     )
+;; )
+(def tent-pole-neartop
+                (->> vdisc
+                (translate leftpoint-lower)
+                (translate [0 (* wall-thickness 4) 0]))
+)
+(def tent-pole-fartop
+                (->> vdisc
+                (translate leftpoint-upper)
+                (translate [0 (* wall-thickness -2) 0]))
+)
+(def tent-pole-nearbottom
+    (->> (sphere out-radius)
+        (translate leftpoint-lower)
+        (translate [0 (* wall-thickness 4) -60]))
+)
+(def tent-pole-farbottom
+    (->> (sphere out-radius)
+        (translate leftpoint-upper)
+        (translate [0 (* wall-thickness -2) -60]))
 )
 
+(def tent-pole 
+  (let [m3t (->>(cylinder inner-radius  20)
+                  (rotate (/ π 2) [1 0 0])
+                  (with-fn 30))]
+      (difference
+        (union
+            (hull tent-pole-neartop tent-pole-nearbottom)
+            (hull tent-pole-fartop tent-pole-farbottom)
+            (hull tent-pole-nearbottom tent-pole-farbottom)
+        )
+          ;holes for vertical beams between north and south beams
+        (hull 
+            (->> m3t
+                (translate leftpoint-upper)
+                )
+            (->> m3t
+                (translate leftpoint-lower))
+        )
+      )
+  )
+)
 ;;;;;;;;;;;;;;;;;;
 ;; Final Export ;;
 ;;;;;;;;;;;;;;;;;;
@@ -918,6 +974,7 @@
         thumb-plate
         finger-plate-rack
         thumb-plate-rack
+        tent-pole
     )
 )
 
@@ -947,3 +1004,8 @@
       (write-scad (mirror [-1 0 0] thumb-plate-rack)))
 
 (spit "things/tent-pole.scad" (write-scad tent-pole))
+
+(spit "things/test.scad" (write-scad 
+  (key-place lastcol cornerrow 
+    (hex-slot :down (- -1.5 plate-thickness)))
+))
