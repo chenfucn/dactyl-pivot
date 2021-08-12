@@ -40,9 +40,10 @@ downward.
 * [Install OpenSCAD](http://www.openscad.org/)
 
 **Generating the design**
+* cd into the root of the project.
 * Run `lein repl`
 * Load the file `(load-file "src/dactyl_pivot/dactyl.clj")`
-* This will regenerate the `things/*.scad` files
+* This will generate or regenerate the `things/*.scad` files
 * Use OpenSCAD to open a `.scad` file.
 * Make changes to design, repeat `load-file`, OpenSCAD will watch for changes and rerender.
 * When done, use OpenSCAD to export STL files
