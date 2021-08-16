@@ -1,5 +1,7 @@
 # The Dactyl-Pivot Keyboard
 
+![](images/dactyl-pivot-thumb-side.jpeg)
+
 This is a fork of [Dactyl Manuform](https://github.com/abstracthat/dactyl-manuform) keyboard,
 which in-turn is a fork of the [Dactyl Keyboard](https://github.com/adereth/dactyl-keyboard)
 
@@ -11,13 +13,13 @@ benefits:
 * No more hollowing sound caused by the big case.
 * Greater flexibility to key placement. We don't need to worry about
 installation clearance.
-* 3d printing of these cases takes less plastic, reducing wastes.
-* When customize the design, each part can be experimented on
-seperatedly, leading to faster prototyping and less wastes.  
+* 3d printing of these cases takes less plastic, reducing waste.
+* When customizing the design, each part can be experimented on
+separately, leading to faster prototyping and less waste.  
 
 ### Thumb cluster
 
-A common complain aginst dactyl is the thumb cluster being too high. The popular manuform 
+A common complaint aginst dactyl is the thumb cluster being too high. The popular manuform 
 variant changed to a thumb cluster that contours downward. Unfortunately, this change
 creates another problem, the thumb keys are too far away from the home row, leading to
 lots of thumb stretching.
