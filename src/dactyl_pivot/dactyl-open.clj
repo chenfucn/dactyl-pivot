@@ -44,7 +44,6 @@
           :else [0 0 0])))
 
 (def thumb-offsets [-8 17 21])
-;(def thumb-offsets [-6 18 25])
 
 (def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
@@ -81,8 +80,8 @@
 ;; Switch Hole ;;
 ;;;;;;;;;;;;;;;;;
 
-(def keyswitch-height 14.25) ;; Was 14.1, then 14.25
-(def keyswitch-width 14.25)
+(def keyswitch-height 14.15) ;; Was 14.1, then 14.25
+(def keyswitch-width 14.15)
 
 (def sa-profile-key-height 12.7)
 
@@ -979,33 +978,28 @@
 )
 
 
-(spit "things/assembled-right.scad"
+(spit "things/open/assembled-right.scad"
       (write-scad dactyl-top-right))
 
-(spit "things/fingers-right.scad"
+(spit "things/open/fingers-right.scad"
       (write-scad finger-plate))
-(spit "things/thumbs-right.scad"
+(spit "things/open/thumbs-right.scad"
       (write-scad thumb-plate))
-(spit "things/finger-plate-rack-right.scad"
+(spit "things/open/finger-plate-rack-right.scad"
       (write-scad finger-plate-rack))
-(spit "things/thumb-plate-rack-right.scad"
+(spit "things/open/thumb-plate-rack-right.scad"
       (write-scad thumb-plate-rack))
 
-(spit "things/assembled-left.scad"
+(spit "things/open/assembled-left.scad"
       (write-scad (mirror [-1 0 0] dactyl-top-right)))
 
-(spit "things/fingers-left.scad"
+(spit "things/open/fingers-left.scad"
       (write-scad (mirror [-1 0 0] finger-plate)))
-(spit "things/thumbs-left.scad"
+(spit "things/open/thumbs-left.scad"
       (write-scad (mirror [-1 0 0] thumb-plate)))
-(spit "things/finger-plate-rack-left.scad"
+(spit "things/open/finger-plate-rack-left.scad"
       (write-scad (mirror [-1 0 0] finger-plate-rack)))
-(spit "things/thumb-plate-rack-left.scad"
+(spit "things/open/thumb-plate-rack-left.scad"
       (write-scad (mirror [-1 0 0] thumb-plate-rack)))
 
-(spit "things/tent-pole.scad" (write-scad tent-pole))
-
-(spit "things/test.scad" (write-scad 
-  (key-place lastcol cornerrow 
-    (hex-slot :down (- -1.5 plate-thickness)))
-))
+(spit "things/open/tent-pole.scad" (write-scad tent-pole))
