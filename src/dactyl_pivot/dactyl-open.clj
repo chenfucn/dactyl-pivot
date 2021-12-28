@@ -3,7 +3,8 @@
     (:require [clojure.core.matrix :refer [array matrix mmul]]
               [scad-clj.scad :refer :all]
               [scad-clj.model :refer :all]
-              [unicode-math.core :refer :all]))
+              [unicode-math.core :refer :all]
+              [clojure.java.io :as io]))
 
 
 (defn deg2rad [degrees]
@@ -977,6 +978,7 @@
     )
 )
 
+(.mkdir (java.io.File. "things"))
 
 (spit "things/open/assembled-right.scad"
       (write-scad dactyl-top-right))

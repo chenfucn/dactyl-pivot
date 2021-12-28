@@ -3,7 +3,8 @@
     (:require [clojure.core.matrix :refer [array matrix mmul]]
               [scad-clj.scad :refer :all]
               [scad-clj.model :refer :all]
-              [unicode-math.core :refer :all]))
+              [unicode-math.core :refer :all]
+              [clojure.java.io :as io]))
 
 
 (defn deg2rad [degrees]
@@ -943,6 +944,8 @@
                                  usb-holder-notch
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
+
+(.mkdir (java.io.File. "things"))
 
 (spit "things/closed/right.scad"
       (write-scad model-right))
