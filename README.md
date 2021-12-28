@@ -1,6 +1,6 @@
 # The Dactyl-Pivot Keyboard
 
-An open source ergonomic keyboard.
+![](images/dactyl-pivot-thumb-side.jpeg)
 
 This is a fork of [Dactyl Manuform](https://github.com/abstracthat/dactyl-manuform) keyboard,
 which in-turn is a fork of the [Dactyl Keyboard](https://github.com/adereth/dactyl-keyboard)
@@ -16,6 +16,18 @@ In normal keyboards, the thumbs rest on the space bar. The tip of the thumb is a
 1.5 to 2 rows below the home row, between key B and the space bar. Comparing with the
 original dactyl, the manuform variant's thumbs keys are much further away, mostly more
 than 2 rows below the home row.
+
+## Features
+
+* A pivoting thumb cluster.
+* Adjustable tenting.
+* No more hollowing sound caused by the big case.
+* Greater flexibility to key placement. We don't need to worry about
+installation clearance.
+* 3d printing of these cases takes less plastic, reducing waste.
+* When customizing the design, each part can be experimented on
+separately, leading to faster prototyping and less waste.  
+
 
 ## Two versions
 
