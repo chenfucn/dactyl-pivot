@@ -310,6 +310,7 @@
              (key-place (+ innercol-offset 3) lastrow web-post-tr)
              (key-place (+ innercol-offset 3) lastrow web-post-br) 
              (key-place (+ innercol-offset 4) lastrow web-post-tl) 
+             (key-place (+ innercol-offset 4) lastrow web-post-bl) 
          )]
 
           ))
@@ -420,16 +421,204 @@
                       (thumb-place 1 -1/8 web-post-tr)
                       (thumb-place 0.5 7/8 web-post-br)
                       (key-place 0 cornerrow web-post-bl)
-                      (key-place 0 cornerrow web-post-tl)
+                      (key-place 0 (- cornerrow 1) web-post-bl)
                       (thumb-place 0.5 7/8 web-post-br)
                       (thumb-place 0.5 7/8 web-post-tr)
                       )))
 
 (def thumb
-
   (union
    (thumb-layout single-plate)
    (color [1 0 0] thumb-connectors)
+  )
+)
+
+
+(def outpostr 
+  (+ (/ plate-thickness 2) post-size)
+)
+(def outpost-disc
+  (->> (difference
+         (translate [0 post-size 0] (with-fn 30 (cylinder outpostr post-size)))
+         (translate [0 (/ plate-thickness -2) 0] (cube plate-thickness plate-thickness (* post-size 2)))
+       )
+      (rotate (/ π 2) [0 1 0] )
+  )
+)
+
+(def outpost-up1
+  (translate [(- (/ keyswitch-width -2) 1.5) (+ 1.5 (/ keyswitch-height 2)) (/ plate-thickness 2)] outpost-disc)
+)
+
+(def outpost-up2
+  (translate [(+ 1.5 (/ keyswitch-width 2)) (+ 1.5 (/ keyswitch-height 2)) (/ plate-thickness 2)] outpost-disc)
+)
+
+(def outpost-down1
+  (translate [(- (/ keyswitch-width -2) 1.5) (- (/ keyswitch-height -2) 1.5) (/ plate-thickness 2)] (rotate π [0 0 1] outpost-disc))
+)
+
+(def outpost-down2
+  (translate [(+ 1.5 (/ keyswitch-width 2)) (- (/ keyswitch-height -2) 1.5) (/ plate-thickness 2)] (rotate π [0 0 1] outpost-disc))
+)
+
+(def outpost-left1
+  (translate [(- (/ keyswitch-width -2) 1.5) (+ 1.5 (/ keyswitch-height 2)) (/ plate-thickness 2)] (rotate (/ π 2) [0 0 1] outpost-disc))
+)
+
+(def outpost-left2
+  (translate [(- (/ keyswitch-width -2) 1.5) (- (/ keyswitch-height -2) 1.5) (/ plate-thickness 2)] (rotate (/ π 2) [0 0 1] outpost-disc))
+)
+
+(def outpost-right1
+  (translate [(+ 1.5 (/ keyswitch-width 2)) (+ 1.5 (/ keyswitch-height 2)) (/ plate-thickness 2)] (rotate (/ π -2) [0 0 1] outpost-disc))
+)
+
+(def outpost-right2
+  (translate [(+ 1.5 (/ keyswitch-width 2)) (- (/ keyswitch-height -2) 1.5) (/ plate-thickness 2)] (rotate (/ π -2) [0 0 1] outpost-disc))
+)
+
+(def outpost-wall
+  (union
+    ;; top
+    (for [col columns]
+        (hull
+          (key-place col 0 outpost-up1)
+          (key-place col 0 outpost-up2)
+        )
+    )
+    (for [col columns
+          :when (not= col lastcol)
+          ]
+        (hull
+          (key-place col 0 outpost-up2)
+          (key-place (+ 1 col) 0 outpost-up1)
+        )
+    )
+
+    (hull
+        (key-place lastcol 0 outpost-up2)
+        (key-place lastcol 0 outpost-right1)
+    )
+
+    ;; right
+    (for [row rows]
+      (hull
+        (key-place lastcol row outpost-right1)
+        (key-place lastcol row outpost-right2)
+      )
+    )
+    (for [row rows :when (not= row lastrow)]
+      (hull
+        (key-place lastcol row outpost-right2)
+        (key-place lastcol (+ 1 row) outpost-right1)
+      )
+    )
+    (hull
+        (key-place lastcol lastrow outpost-right2)
+        (key-place lastcol lastrow outpost-down2)
+    )
+
+    ;; bottom
+    (for [col (range (+ innercol-offset 1) ncols)]
+        (hull
+          (key-place col lastrow outpost-down1)
+          (key-place col lastrow outpost-down2)
+        )
+    )
+    (for [col (range (+ innercol-offset 1) lastcol)]
+        (hull
+          (key-place col lastrow outpost-down2)
+          (key-place (+ 1 col) lastrow outpost-down1)
+        )
+    )
+    ;; left
+    (for [row (range 0 cornerrow)]
+      (hull
+        (key-place innercol-offset row outpost-left1)
+        (key-place innercol-offset row outpost-left2)
+      )
+    )
+    (for [row (range 0 (- cornerrow 1))]
+      (hull
+        (key-place innercol-offset row outpost-left2)
+        (key-place innercol-offset (+ 1 row) outpost-left1)
+      )
+    )
+    (hull
+        (key-place innercol-offset 0 outpost-up1)
+        (key-place innercol-offset 0 outpost-left1)
+    )
+
+    ;; Around thumb keys
+    (hull
+        (key-place innercol-offset (- cornerrow 1) outpost-left2)
+        (thumb-place 0.5 7/8 outpost-up2)
+    )
+    (hull
+        (thumb-place 0.5 7/8 outpost-up2)
+        (thumb-place 0.5 7/8 outpost-up1)
+    )
+    (hull
+        (thumb-place 0.5 7/8 outpost-up1)
+        (thumb-place 1.3 7/8 outpost-up2)
+    )
+    (hull
+        (thumb-place 1.3 7/8 outpost-up2)
+        (thumb-place 1.3 7/8 outpost-up1)
+    )
+    (hull
+        (thumb-place 1.3 7/8 outpost-up1)
+        (thumb-place 2.1 7/8 outpost-up2)   
+    )
+    (hull
+        (thumb-place 2.1 7/8 outpost-up2)   
+        (thumb-place 2.1 7/8 outpost-up1)   
+    )
+    (hull
+        (thumb-place 2.1 7/8 outpost-up1)   
+        (thumb-place 2.1 7/8 outpost-left1)   
+    )
+    (hull
+        (thumb-place 2.1 7/8 outpost-left1)   
+        (thumb-place 2.1 7/8 outpost-left2)   
+    )
+    (hull
+        (thumb-place 2.1 7/8 outpost-left2)   
+        (thumb-place 2 -1/8 outpost-left1)   
+    )
+    (hull
+        (thumb-place 2 -1/8 outpost-left1)   
+        (thumb-place 2 -1/8 outpost-left2)   
+    )
+    (hull
+        (thumb-place 2 -1/8 outpost-left2)   
+        (thumb-place 2 -1/8 outpost-down1)   
+    )
+    (hull
+        (thumb-place 2 -1/8 outpost-down1)   
+        (thumb-place 2 -1/8 outpost-down2)   
+    )
+    (hull
+        (thumb-place 2 -1/8 outpost-down2)   
+        (thumb-place 1 -1/8 outpost-down1)   
+    )
+    (hull
+        (thumb-place 1 -1/8 outpost-down1)   
+        (thumb-place 1 -1/8 outpost-down2)   
+    )
+    (hull
+        (thumb-place 1 -1/8 outpost-down2)   
+        (thumb-place 0 -1/8 outpost-down1)   
+    )
+    (hull
+        (thumb-place 0 -1/8 outpost-down1)   
+        (thumb-place 0 -1/8 outpost-down2)   
+    )
+    (hull
+        (thumb-place 0 -1/8 outpost-down2)   
+        (key-place (+ innercol-offset 1) lastrow outpost-down1)
+    )
   )
 )
 
@@ -438,78 +627,38 @@
 ;; Mount Holes
 ;;;;;;;;;;;;;;;;;;
 
-(defn m3hex [clearance]
-    (let [
-          height    (+ 2.32 clearance)
-          diameter  (+ 5.31 clearance)
-          angle     (/ π 3)
-          edge      (/ diameter (Math/tan angle))
-      ]
-      (union
-          (cube diameter edge height)
-          (rotate (/ π 3) [0 0 1] (cube diameter edge height))
-          (rotate (/ π -3) [0 0 1] (cube diameter edge height))
-      )
-    )
+(defn bottom [height p]
+  (->> (project p)
+       (extrude-linear {:height height :twist 0 :convexity 0})
+       (translate [0 0 (+ (/ height 2) 5)])))
+
+(defn bottom-hull [& p]
+  (hull p (bottom 0.001 p)))
+
+(def outerd
+  (with-fn 30 (sphere 2.8))
 )
 
-;; hole for m3 screw
-(def inner-radius 1.68)
-(def out-radius 6)
-
-(defn horizontal-mov [amount direction shape]
-    (case direction
-     :up (translate [0 amount 0] shape)
-     :down (translate [0  (- 0 amount) 0] shape)
-     :left (translate [(- 0 amount) 0 0] shape)
-     :right (translate [amount 0 0] shape)
-    )
-)
-; move shape from center of a switch hole up to top of the hole, 
-; used for position mounting holes right outside of switch holes
-(defn ext-out [direction z-off shape]
-    (->> shape
-        (horizontal-mov (+ (/ mount-height 2) (+ out-radius 1)) direction)
-        (translate [0 0 (+ z-off (/ plate-thickness 2))])
-    )
+(def innerd
+  (with-fn 30 (sphere 2))
 )
 
-(defn plate-wall [direction]
-    (case direction
-     :up (hull web-post-tl web-post-tr)
-     :down (hull web-post-bl web-post-br)
-     :left (hull web-post-tl web-post-bl)
-     :right (hull web-post-tr web-post-br)
-    )
+(def support-poles
+  (union
+    (bottom-hull (translate [(/ keyswitch-width -2) 0 5] (key-place innercol-offset 0.5 outerd)))
+    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) -0.7 0.5] (key-place lastcol 0.5 outerd)))
+    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) 0 0.5] (key-place lastcol (+ cornerrow 0.5) outerd)))
+    (bottom-hull (translate [0 0 1.5] (thumb-place 2.2 3/8 outerd)))
+  )
 )
 
-;; (defn mount-hole [direction]
-;;     (difference
-;;         (hull 
-;;             (plate-wall direction)
-;;             (ext-out direction 0 (cylinder out-radius (* plate-thickness 1.5 )))
-;;         )
-;;         (union
-;;           (ext-out direction 0 (with-fn 30 (cylinder inner-radius (* plate-thickness 2)))) ;m3 screw hole
-;;           (ext-out direction 0 (translate [0,0,-2] (m3hex 0.3))) ;m3 screw hole
-;;         )
-;;     )
-;; )
-(defn mount-hole [direction sink]
-        (hull 
-            (plate-wall direction)
-            (ext-out direction 0 (translate [0 0 (- sink)] (sphere out-radius)))
-        )
-
-)
-
-(def plate-holes
-    (union
-        (key-place 0 0 (mount-hole :up out-radius))
-        (key-place lastcol 0 (mount-hole :up out-radius))
-        (key-place lastcol lastrow ( mount-hole :down out-radius))
-        (thumb-place 1 -1/8 (mount-hole :down 0))
-    )
+(def support-screw
+  (union
+    (bottom-hull (translate [(/ keyswitch-width -2) 0 -1] (key-place innercol-offset 0.5 innerd)))
+    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) -0.7 -1] (key-place lastcol 0.5 innerd)))
+    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) 0 -1] (key-place lastcol (+ cornerrow 0.50) innerd)))
+    (bottom-hull (translate [0 0 -1] (thumb-place 2.2 3/8 innerd)))
+  )
 )
 
 ;;;;;;;;;;;;;;;;;;
@@ -517,11 +666,16 @@
 ;;;;;;;;;;;;;;;;;;
 
 (def dactyl-top-right
-   (union key-holes
-          connectors
-          thumb
-          plate-holes
+  (difference
+    (union
+      key-holes
+      connectors
+      thumb
+      outpost-wall
+      support-poles
     )
+    support-screw
+  )
 )
 
 (spit "things/lightcycle-right.scad"
