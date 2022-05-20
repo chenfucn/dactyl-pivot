@@ -630,33 +630,45 @@
 (defn bottom [height p]
   (->> (project p)
        (extrude-linear {:height height :twist 0 :convexity 0})
-       (translate [0 0 (+ (/ height 2) 5)])))
+       (translate [0 0 (/ height 2)])))
 
 (defn bottom-hull [& p]
   (hull p (bottom 0.001 p)))
 
 (def outerd
-  (with-fn 30 (sphere 2.8))
+  (with-fn 30 (sphere 3.5))
 )
 
 (def innerd
   (with-fn 30 (sphere 2))
 )
 
+(defn round-pole [height radius]
+  (translate [0 0 (- 0 height)] (bottom-hull (translate [0 0 height] (with-fn 30 (sphere radius)))))
+)
+
+(def pole-shell
+  (round-pole 12 3.5)
+)
+
+(def pole-hole
+  (round-pole 20 2)
+)
+
 (def support-poles
   (union
-    (bottom-hull (translate [(/ keyswitch-width -2) 0 5] (key-place innercol-offset 0.5 outerd)))
-    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) -0.7 0.5] (key-place lastcol 0.5 outerd)))
-    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) 0 0.5] (key-place lastcol (+ cornerrow 0.5) outerd)))
+    (translate (key-position innercol-offset 0 [(- (/ mount-width -2) 2) (- (/ mount-width -2) 1) 1]) pole-shell)
+    (translate (key-position lastcol 0 [(+ (/ mount-width 2) 2) (- (/ mount-width -2) 2) 1]) pole-shell)
+    (translate (key-position lastcol cornerrow [(+ (/ mount-width 2) 2) (- (/ mount-width -2) 2) 1]) pole-shell)
     (bottom-hull (translate [0 0 1.5] (thumb-place 2.2 3/8 outerd)))
   )
 )
 
 (def support-screw
   (union
-    (bottom-hull (translate [(/ keyswitch-width -2) 0 -1] (key-place innercol-offset 0.5 innerd)))
-    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) -0.7 -1] (key-place lastcol 0.5 innerd)))
-    (bottom-hull (translate [(+ (/ keyswitch-width 2) 2) 0 -1] (key-place lastcol (+ cornerrow 0.50) innerd)))
+    (translate (key-position innercol-offset 0 [(- (/ mount-width -2) 2) (- (/ mount-width -2) 1) 1]) pole-hole)
+    (translate (key-position lastcol 0 [(+ (/ mount-width 2) 2) (- (/ mount-width -2) 2) 1]) pole-hole)
+    (translate (key-position lastcol cornerrow [(+ (/ mount-width 2) 2) (- (/ mount-width -2) 2) 1]) pole-hole)
     (bottom-hull (translate [0 0 -1] (thumb-place 2.2 3/8 innerd)))
   )
 )
